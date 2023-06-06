@@ -1,94 +1,38 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import ttk
 import pandas as pd
-import os
-import glob
-import tkinter.ttk as ttk
 
-def buscar_archivo(nombre_archivo, directorio):
-    patron = f"{directorio}/**/{nombre_archivo}"
-    archivos_encontrados = glob.glob(patron, recursive=True)
-    # Imprimir la lista de archivos encontrados
-    print("Archivos encontrados:")
-    for archivo in archivos_encontrados:
-        print(archivo)
+# Ruta del archivo Excel
+archivo_excel = r"\\RIDER\DocInterno\PEI - PDI 2022 - 2031\PLANES DE ACCIÓN 2023\1. VR. Académica\VR. Académica.xlsm"
+hoja = "2. Seguimiento"
 
-    return archivos_encontrados
+# Leer la hoja "2. Seguimiento" del archivo Excel y obtener los datos de las columnas B3 a Q174
+df = pd.read_excel(archivo_excel, sheet_name=hoja, header=None, skiprows=2, usecols="B:Q", nrows=172)
 
-def leer_archivos_excel(ruta):
-    archivos_excel = []
-    for archivo in os.listdir(ruta):
-        if archivo.endswith(".xlsx"):
-            archivos_excel.append(archivo)
-    return archivos_excel
-
-def buscar_datos(nombre_archivo, palabra_clave):
-    archivos_excel = buscar_archivo(nombre_archivo, ruta_archivos)
-    resultados = []
-    for archivo in archivos_excel:
-        df = pd.read_excel(archivo, sheet_name='Lideres')
-        for columna in df.columns:
-            coincidencias = df[df[columna].astype(str).str.contains(palabra_clave, na=False, case=False)]
-            if not coincidencias.empty:
-                resultado = {
-                    'Columna': columna,
-                    'Coincidencias': coincidencias[columna].tolist()  # Convertir las coincidencias en una lista
-                }
-                resultados.append(resultado)
-    return resultados
-
-def buscar():
-    palabra_clave = entry.get()
-    nombre_archivo = "Líderes PDI.xlsx"  # Aquí se define el nombre del archivo a buscar
-    resultados = buscar_datos(nombre_archivo, palabra_clave)
-    if resultados:
-        # Crear una nueva ventana
-        resultados_window = tk.Toplevel(window)
-        resultados_window.title("Resultados de búsqueda")
-
-        # Crear un Treeview para mostrar los resultados como tabla
-        treeview = ttk.Treeview(resultados_window)
-
-        # Configurar las columnas
-        treeview["columns"] = ("Columna", "Coincidencias")
-        treeview.heading("Columna", text="Columna")
-        treeview.heading("Coincidencias", text="Coincidencias")
-
-        # Agregar los datos al Treeview
-        for resultado in resultados:
-            columna = resultado["Columna"]
-            coincidencias = resultado["Coincidencias"]
-            # Insertar una nueva fila por cada coincidencia
-            for coincidencia in coincidencias:
-                treeview.insert("", "end", values=(columna, coincidencia))
-
-        # Ajustar las columnas al contenido
-        for column in treeview["columns"]:
-            treeview.column(column, width=100, anchor="center")
-
-        # Mostrar el Treeview
-        treeview.pack(fill="both", expand=True)
-    else:
-        messagebox.showinfo("Resultados de búsqueda", "No se encontraron coincidencias")
-
-# Configuración de la ventana
+# Crear la ventana
 window = tk.Tk()
-window.title("Buscador de datos en archivos Excel")
-window.geometry("400x200")
+window.title("Tabla de datos")
 
-# Etiqueta y campo de entrada
-label = tk.Label(window, text="Ingrese el dato a buscar:")
-label.pack()
-entry = tk.Entry(window)
-entry.pack()
+# Crear el Treeview para mostrar la tabla
+treeview = ttk.Treeview(window)
 
-# Botón de búsqueda
-search_button = tk.Button(window, text="Buscar", command=buscar)
-search_button.pack()
+# Configurar las columnas
+columnas = df.columns.tolist()
+treeview["columns"] = columnas
+treeview.heading("#0", text="Índice")
+for columna in columnas:
+    treeview.heading(columna, text=columna)
 
-# Ruta de los archivos de Excel
-ruta_archivos = r'C:\Users\mercadeo_ventas1\Desktop'
+# Agregar los datos al Treeview
+for i, row in df.iterrows():
+    treeview.insert("", "end", text=str(i), values=row.tolist())
 
+# Ajustar las columnas al contenido
+for columna in columnas:
+    treeview.column(columna, width=100, anchor="center")
+
+# Mostrar el Treeview
+treeview.pack(fill="both", expand=True)
 
 # Iniciar la aplicación
 window.mainloop()
