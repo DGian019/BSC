@@ -1,4 +1,4 @@
-import tkinter as tk
+'''import tkinter as tk
 from tkinter import messagebox
 import pandas as pd
 import os
@@ -112,6 +112,61 @@ search_button.pack()
 
 # Ruta de los archivos de Excel
 ruta_archivos = r"\\RIDER\DocInterno\PEI - PDI 2022 - 2031\PLANES DE ACCIÓN 2023\1. VR. Académica"
+
+# Iniciar la aplicación
+window.mainloop()'''
+
+import tkinter as tk
+from tkinter import ttk
+import pandas as pd
+
+# Ruta del archivo Excel
+archivo_excel = r"\\RIDER\DocInterno\PEI - PDI 2022 - 2031\PLANES DE ACCIÓN 2023\1. VR. Académica\VR. Académica.xlsm"
+hoja = "2. Seguimiento"
+
+# Leer la hoja "2. Seguimiento" del archivo Excel
+df = pd.read_excel(archivo_excel, sheet_name=hoja)
+
+# Obtener los valores únicos de la columna "F" (Proyecto)
+proyectos = df.iloc[3:, 5].dropna().unique().tolist()
+
+def mostrar_datos(event):
+    # Obtener el valor seleccionado de la lista desplegable
+    proyecto_seleccionado = combo_proyecto.get()
+
+    # Filtrar el DataFrame por el valor seleccionado en la columna "F"
+    datos_filtrados = df[df.iloc[:, 5] == proyecto_seleccionado]
+
+    # Limpiar el Treeview
+    treeview.delete(*treeview.get_children())
+
+    # Agregar los datos filtrados al Treeview
+    for i, row in datos_filtrados.iterrows():
+        treeview.insert("", "end", text=str(i), values=row.tolist()[1:])
+
+# Crear la ventana
+window = tk.Tk()
+window.title("Tabla de datos Prueba")
+
+# Crear la etiqueta y la lista desplegable
+label_proyecto = tk.Label(window, text="Seleccion de Proyecto:")
+label_proyecto.pack()
+combo_proyecto = ttk.Combobox(window, state="readonly", values=proyectos)
+combo_proyecto.pack()
+combo_proyecto.bind("<<ComboboxSelected>>", mostrar_datos)
+
+# Crear el Treeview para mostrar la tabla
+treeview = ttk.Treeview(window)
+
+# Configurar las columnas
+columnas = df.columns.tolist()[1:]
+treeview["columns"] = columnas
+treeview.heading("#0", text="Índice")
+for columna in columnas:
+    treeview.heading(columna, text=columna)
+
+# Mostrar el Treeview vacío inicialmente
+treeview.pack(fill="both", expand=True)
 
 # Iniciar la aplicación
 window.mainloop()
