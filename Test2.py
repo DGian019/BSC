@@ -1,122 +1,78 @@
-'''import tkinter as tk
-from tkinter import messagebox
+'''
+import tkinter as tk
+from tkinter import ttk
 import pandas as pd
-import os
-import glob
-import tkinter.ttk as ttk
 
-def buscar_archivo(nombre_archivo, directorio):
-    patron = f"{directorio}/**/{nombre_archivo}"
-    archivos_encontrados = glob.glob(patron, recursive=True)
-    return archivos_encontrados
+# Ruta del archivo Excel
+archivo_excel = r"\\RIDER\DocInterno\PEI - PDI 2022 - 2031\PLANES DE ACCIÓN 2023\1. VR. Académica\VR. Académica.xlsm"
+hoja = "2. Seguimiento"
 
-def leer_archivos_excel(ruta):
-    archivos_excel = []
-    for archivo in os.listdir(ruta):
-        if archivo.endswith(".xlsx"):
-            archivos_excel.append(archivo)
-    return archivos_excel
+# Leer la hoja "2. Seguimiento" del archivo Excel
+df = pd.read_excel(archivo_excel, sheet_name=hoja)
 
-def cargar_valores_columnas():
-    nombre_archivo = "VR. Académica.xlsx"  # Aquí se define el nombre del archivo a buscar
-    archivos_excel = buscar_archivo(nombre_archivo, ruta_archivos)
-    if archivos_excel:
-        archivo = archivos_excel[0]  # Tomamos el primer archivo encontrado
-        df = pd.read_excel(archivo, sheet_name='1. Plan de Acción')
-        columnas = df.columns.tolist()
-        return columnas
-    else:
-        return []
+# Obtener los valores únicos de la columna "G" (Componente)
+proyectos = df.iloc[3:, 6].dropna().unique().tolist()
 
-def buscar_datos(programa, proyecto, componente, periodo):
-    nombre_archivo = "VR. Académica.xlsx"  # Aquí se define el nombre del archivo a buscar
-    archivos_excel = buscar_archivo(nombre_archivo, ruta_archivos)
-    resultados = []
-    for archivo in archivos_excel:
-        df = pd.read_excel(archivo, sheet_name='1. Plan de Acción')
-        coincidencias = df[(df['Programa'] == programa) & (df['Proyecto'] == proyecto) & (df['Componente'] == componente) & (df['Periodo'] == periodo)]
-        if not coincidencias.empty:
-            resultado = {
-                'Archivo': archivo,
-                'Coincidencias': coincidencias.to_dict('records')
-            }
-            resultados.append(resultado)
-    return resultados
+def obtener_valores_unicos_columnas_combinadas():
+    columnas_combinadas = ['G']
+    valores_columnas = []
 
-def buscar():
-    programa = combo_programa.get()
-    proyecto = combo_proyecto.get()
-    componente = combo_componente.get()
-    periodo = combo_periodo.get()
-    
-    resultados = buscar_datos(programa, proyecto, componente, periodo)
-    if resultados:
-        # Crear una nueva ventana
-        resultados_window = tk.Toplevel(window)
-        resultados_window.title("Resultados de búsqueda")
+    for columna in columnas_combinadas:
+        valores = df[columna].dropna().unique().tolist()
+        valores_columnas.append(valores)
 
-        # Crear un Treeview para mostrar los resultados como tabla
-        treeview = ttk.Treeview(resultados_window)
+    return valores_columnas
 
-        # Configurar las columnas
-        treeview["columns"] = ("Archivo", "Coincidencias")
-        treeview.heading("Archivo", text="Archivo")
-        treeview.heading("Coincidencias", text="Coincidencias")
+def mostrar_datos(event):
+    # Obtener el valor seleccionado de la lista desplegable
+    proyecto_seleccionado = combo_proyecto.get()
 
-        # Agregar los datos al Treeview
-        for resultado in resultados:
-            archivo = resultado["Archivo"]
-            coincidencias = resultado["Coincidencias"]
-            # Insertar una nueva fila por cada coincidencia
-            for coincidencia in coincidencias:
-                treeview.insert("", "end", values=(archivo, coincidencia))
+    # Filtrar el DataFrame por el valor seleccionado en la columna "G"
+    datos_filtrados = df[df.iloc[:, 6] == proyecto_seleccionado]
 
-        # Ajustar las columnas al contenido
-        for column in treeview["columns"]:
-            treeview.column(column, width=100, anchor="center")
+    # Limpiar el Treeview
+    treeview.delete(*treeview.get_children())
 
-        # Mostrar el Treeview
-        treeview.pack(fill="both", expand=True)
-    else:
-        messagebox.showinfo("Resultados de búsqueda", "No se encontraron coincidencias")
+    # Contador de filas
+    contador_filas = 0
 
-# Configuración de la ventana
+    # Agregar los datos filtrados al Treeview
+    for _, row in datos_filtrados.iterrows():
+        valores = row.tolist()[1:]
+        # Insertar una nueva fila en el Treeview con los valores de la fila
+        treeview.insert("", "end", text=str(contador_filas), values=valores, tags=("datos",))
+        contador_filas += 1
+
+# Crear la ventana
 window = tk.Tk()
-window.title("Buscador de datos en archivos Excel")
-window.geometry("400x300")
+window.title("Tabla de datos Prueba")
 
-# Etiquetas y listas desplegables
-label_programa = tk.Label(window, text="Programa:")
-label_programa.pack()
-combo_programa = ttk.Combobox(window, state="readonly", values=cargar_valores_columnas())
-combo_programa.pack()
-
-label_proyecto = tk.Label(window, text="Proyecto:")
+# Crear la etiqueta y la lista desplegable
+label_proyecto = tk.Label(window, text="Seleccion de Componentes:")
 label_proyecto.pack()
-combo_proyecto = ttk.Combobox(window, state="readonly", values=cargar_valores_columnas())
+combo_proyecto = ttk.Combobox(window, state="readonly", values=proyectos)
 combo_proyecto.pack()
+combo_proyecto.bind("<<ComboboxSelected>>", mostrar_datos)
 
-label_componente = tk.Label(window, text="Componente:")
-label_componente.pack()
-combo_componente = ttk.Combobox(window, state="readonly", values=cargar_valores_columnas())
-combo_componente.pack()
+# Crear el Treeview para mostrar la tabla
+treeview = ttk.Treeview(window)
 
-label_periodo = tk.Label(window, text="Periodo:")
-label_periodo.pack()
-combo_periodo = ttk.Combobox(window, state="readonly", values=cargar_valores_columnas())
-combo_periodo.pack()
+# Configurar las columnas con nombres personalizados
+nombres_columnas = ["Perpectiva del BSC", "Objetivo Estrategico", "Politica", "Programa", "Proyecto", "Codigo de Componente", "Componentes", "Indicador", "META", "Macro Actvidades", "Actividad", "Porcentaje de aporte al componente", "Entregables", "Codigo del Componente", "Periodo de Ejecucion", "Porcentaje de avance de aporte de la actividad al compenete en el Año"]  # Reemplaza con los nombres deseados
+treeview["columns"] = nombres_columnas
+treeview.heading("#0", text="Índice")
+for columna, nombre_columna in zip(range(len(nombres_columnas)), nombres_columnas):
+    treeview.heading(columna, text=nombre_columna)
 
-# Botón de búsqueda
-search_button = tk.Button(window, text="Buscar", command=buscar)
-search_button.pack()
-
-# Ruta de los archivos de Excel
-ruta_archivos = r"\\RIDER\DocInterno\PEI - PDI 2022 - 2031\PLANES DE ACCIÓN 2023\1. VR. Académica"
+# Mostrar el Treeview vacío inicialmente
+treeview.pack(fill="both", expand=True)
 
 # Iniciar la aplicación
-window.mainloop()'''
+window.mainloop()
 
-import tkinter as tk
+'''
+
+'''import tkinter as tk
 from tkinter import ttk
 import pandas as pd
 
@@ -169,4 +125,4 @@ for columna in columnas:
 treeview.pack(fill="both", expand=True)
 
 # Iniciar la aplicación
-window.mainloop()
+window.mainloop()'''
