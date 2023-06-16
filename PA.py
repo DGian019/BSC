@@ -6,21 +6,11 @@ import pandas as pd
 archivo_excel = r"\\RIDER\DocInterno\Planeacion\1. 2023\1. PDI\2. POAI 2023.xlsx"
 hoja = "POAI 2023"
 
-# Leer la hoja "2. Seguimiento" del archivo Excel
+# Leer la hoja "POAI 2023" del archivo Excel
 df = pd.read_excel(archivo_excel, sheet_name=hoja)
 
 # Obtener los valores únicos de la columna "G" (Componente)
 proyectos = df.iloc[3:, 6].dropna().unique().tolist()
-
-def obtener_valores_unicos_columnas_combinadas():
-    columnas_combinadas = ['G']
-    valores_columnas = []
-
-    for columna in columnas_combinadas:
-        valores = df[columna].dropna().unique().tolist()
-        valores_columnas.append(valores)
-
-    return valores_columnas
 
 def mostrar_datos(event):
     # Obtener el valor seleccionado de la lista desplegable
@@ -37,7 +27,7 @@ def mostrar_datos(event):
 
     # Agregar los datos filtrados al Treeview
     for _, row in datos_filtrados.iterrows():
-        valores = row.tolist()[1:]
+        valores = [row[i] for i in indices_columnas_seleccionadas]  # Filtrar los valores de las columnas seleccionadas
         # Insertar una nueva fila en el Treeview con los valores de la fila
         treeview.insert("", "end", text=str(contador_filas), values=valores, tags=("datos",))
         contador_filas += 1
@@ -56,15 +46,22 @@ combo_proyecto.bind("<<ComboboxSelected>>", mostrar_datos)
 # Crear el Treeview para mostrar la tabla
 treeview = ttk.Treeview(window)
 
-# Configurar las columnas con nombres personalizados
-nombres_columnas = ["Perpectiva del BSC", "Objetivo Estrategico", "Politica", "Programa", "Proyecto", "Codigo de Componente", "Componentes", "Indicador", "META", "Macro Actvidades", "Actividad", "Porcentaje de aporte al componente", "Entregables", "Codigo del Componente", "Periodo de Ejecucion", "Porcentaje de avance de aporte de la actividad al compenete en el Año"]  # Reemplaza con los nombres deseados
-treeview["columns"] = nombres_columnas
+# Definir las columnas seleccionadas y sus nombres
+nombres_columnas = ["PERSPECTIVA DEL BSC","EJE","OBJETIVO ESTRATÉGICO", "POLITICA", "PROGRAMA ", "RESPONSABLE DE PROGRAMA", "PROYECTO", "RESPONSABLE DE PROYECTO", "CÓDIGO COMPONENTE", "COMPONENTES", "COMPONENTES Concatenados", "INDICADOR", "META", "MEGAS","MACROACTIVIDADES", "ACTIVIDAD", "RESPONSABLE COMPONENTE"]
+indices_columnas_seleccionadas = [0, 2, 3, 4, 6, 7, 8, 9, 11, 12, 14, 15, 16]  # Índices de las columnas seleccionadas en el DataFrame
+
+# Configurar las columnas del Treeview
+treeview["columns"] = indices_columnas_seleccionadas
 treeview.heading("#0", text="Índice")
-for columna, nombre_columna in zip(range(len(nombres_columnas)), nombres_columnas):
-    treeview.heading(columna, text=nombre_columna)
+
+# Configurar los nombres de las columnas seleccionadas
+for indice, indice_columna in enumerate(indices_columnas_seleccionadas):
+    nombre_columna = nombres_columnas[indice_columna]
+    treeview.heading(indice_columna, text=f"{indice_columna}: {nombre_columna}")
 
 # Mostrar el Treeview vacío inicialmente
 treeview.pack(fill="both", expand=True)
 
 # Iniciar la aplicación
 window.mainloop()
+
