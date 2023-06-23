@@ -40,27 +40,27 @@ def mostrar_datos(event):
     # Contador de filas
     contador_filas = 0
 
-    # Agregar los datos filtrados del DataFrame original al Treeview
+    # Agregar los datos filtrados del DataFrame POAI 2023 al Treeview
     for _, row in datos_filtrados.iterrows():
         valores = [row[i] for i in indices_columnas_seleccionadas]
         treeview.insert("", "end", text=str(contador_filas), values=valores, tags=("datos",))
         contador_filas += 1
 
     if proyecto_seleccionado in proyectos_nuevo:
-    # Filtrar el DataFrame nuevo por el proyecto seleccionado en la columna "F"
+        # Filtrar el DataFrame nuevo por el proyecto seleccionado en la columna "F" (POAI2023)
         datos_nuevo_filtrados = df_nuevo[df_nuevo.iloc[:, 5] == proyecto_seleccionado]
 
-    # Agregar los datos del nuevo archivo al Treeview
-    for _, row in datos_nuevo_filtrados.iterrows():
-        valores_nuevo = [row[i] for i in indices_columnas_nuevo]
+        # Agregar los datos del nuevo archivo al Treeview
+        for _, row in datos_nuevo_filtrados.iterrows():
+            valores_nuevo = [row[i] for i in indices_columnas_nuevo]
 
-        # Crear una lista de valores para la fila actual
-        valores = [None] * len(indices_columnas_seleccionadas)  # Agregar valores nulos para las columnas seleccionadas del archivo original
-        valores.extend(valores_nuevo)  # Agregar los valores de las columnas seleccionadas del archivo nuevo
+            # Crear una lista de valores para la fila actual
+            valores = [None] * len(indices_columnas_seleccionadas)  # Agregar valores nulos para las columnas seleccionadas del archivo original
+            valores.extend(valores_nuevo)  # Agregar los valores de las columnas seleccionadas del archivo nuevo
 
-        # Insertar la fila en el Treeview
-        treeview.insert("", "end", text=str(contador_filas), values=valores, tags=("datos",))
-        contador_filas += 1
+            # Insertar la fila en el Treeview
+            treeview.insert("", "end", text=str(contador_filas), values=valores, tags=("datos",))
+            contador_filas += 1
 
     
 # Crear la ventana
@@ -78,7 +78,7 @@ combo_proyecto.bind("<<ComboboxSelected>>", mostrar_datos)
 treeview = ttk.Treeview(window)
 
 # Definir las columnas seleccionadas y sus nombres
-nombres_columnas = ["PERSPECTIVA DEL BSC", "EJE", "OBJETIVO ESTRATÉGICO", "POLITICA", "PROGRAMA ", "RESPONSABLE DE PROGRAMA", "PROYECTO", "RESPONSABLE DE PROYECTO", "CÓDIGO COMPONENTE", "COMPONENTES", "COMPONENTES Concatenados", "INDICADOR", "META", "MEGAS", "MACROACTIVIDADES", "ACTIVIDAD", "RESPONSABLE COMPONENTE", "PERIODO DE EJECUCIÓN","% AVANCE EN EL APORTE DE LA ACTIVIDAD AL COMPONENTE EN EL AÑO","% DE CUMPLIMIENTO DEL INDICADOR DE GESTIÓN"]
+nombres_columnas = ["PERSPECTIVA DEL BSC", "EJE", "OBJETIVO ESTRATÉGICO", "POLITICA", "PROGRAMA ", "RESPONSABLE DE PROGRAMA", "PROYECTO", "RESPONSABLE DE PROYECTO", "CÓDIGO COMPONENTE", "COMPONENTES", "COMPONENTES Concatenados", "INDICADOR", "META", "MEGAS", "MACROACTIVIDADES", "ACTIVIDAD", "RESPONSABLE COMPONENTE"]
 indices_columnas_seleccionadas = [0, 2, 3, 4, 6, 7, 8, 9, 11, 12, 14, 15, 16]  # Índices de las columnas seleccionadas en el DataFrame
 
 # Definir los nombres de las nuevas columnas seleccionadas y sus índices
@@ -107,3 +107,4 @@ treeview.pack(fill="both", expand=True)
 
 # Iniciar la aplicación
 window.mainloop()
+
