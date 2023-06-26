@@ -13,6 +13,9 @@ df = pd.read_excel(archivo_excel, sheet_name=hoja)
 # Obtener los valores únicos de la columna "G" (Componente)
 proyectos = df.iloc[3:, 6].dropna().unique().tolist()
 
+# Obtener los códigos de componente únicos
+codigos_componente = df.iloc[3:, 8].dropna().unique().tolist()
+
 # Ruta del nuevo archivo Excel
 nuevo_archivo_excel = r"\\RIDER\DocInterno\PEI - PDI 2022 - 2031\PLANES DE ACCIÓN 2023\12. Dir. Rec Físicos e Infr\12. Dir. Rec Físicos e Infr.xlsm"
 nueva_hoja = "2. Seguimiento"
@@ -28,11 +31,17 @@ columna3_nuevo = df_nuevo.iloc[:, 17].unique()  # Columna "R" (índice 17)
 proyectos_nuevo = df_nuevo.iloc[:, 5].dropna().unique().tolist()
 
 def mostrar_datos(event):
-    # Obtener el valor seleccionado de la lista desplegable
+    # Obtener el valor seleccionado de la lista desplegable (proyecto seleccionado)
     proyecto_seleccionado = combo_proyecto.get()
 
-    # Filtrar el DataFrame original por el valor seleccionado en la columna "G"
+    # Filtrar el DataFrame original por el valor seleccionado en la columna "G" (proyecto seleccionado)
     datos_filtrados = df[df.iloc[:, 6] == proyecto_seleccionado]
+
+    # Obtener los códigos de componente únicos correspondientes al proyecto seleccionado
+    codigos_componente_seleccionados = datos_filtrados.iloc[:, 8].dropna().unique().tolist()
+
+    # Actualizar los valores de la lista desplegable de código de componente
+    combo_componente["values"] = codigos_componente_seleccionados
 
     # Limpiar el Treeview
     treeview.delete(*treeview.get_children())
@@ -62,12 +71,22 @@ def mostrar_datos(event):
 window = ThemedTk()
 window.title("Tabla de datos Prueba")
 
-# Crear la etiqueta y la lista desplegable
-label_proyecto = tk.Label(window, text="Seleccion de Componentes:")
-label_proyecto.pack()
-combo_proyecto = ttk.Combobox(window, state="readonly", values=proyectos)
-combo_proyecto.pack()
+# Crear el frame principal
+frame = ttk.Frame(window)
+frame.pack(padx=30, pady=30)
+
+# Crear la etiqueta y la lista desplegable de proyectos
+label_proyecto = tk.Label(frame, text="Seleccion de Componentes:")
+label_proyecto.pack(side="left")
+combo_proyecto = ttk.Combobox(frame, state="readonly", values=proyectos)
+combo_proyecto.pack(side="left")
 combo_proyecto.bind("<<ComboboxSelected>>", mostrar_datos)
+
+# Crear la etiqueta y la lista desplegable de códigos de componente
+label_componente = tk.Label(frame, text="Código de Componente:")
+label_componente.pack(side="left")
+combo_componente = ttk.Combobox(frame, state="readonly", values=codigos_componente)
+combo_componente.pack(side="left")
 
 # Crear el Treeview para mostrar la tabla
 treeview = ttk.Treeview(window)
