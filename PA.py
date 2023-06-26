@@ -14,7 +14,7 @@ df = pd.read_excel(archivo_excel, sheet_name=hoja)
 proyectos = df.iloc[3:, 6].dropna().unique().tolist()
 
 # Ruta del nuevo archivo Excel
-nuevo_archivo_excel = r"\\RIDER\DocInterno\PEI - PDI 2022 - 2031\PLANES DE ACCIÓN 2023\1. VR. Académica\VR. Académica.xlsm"
+nuevo_archivo_excel = r"\\RIDER\DocInterno\PEI - PDI 2022 - 2031\PLANES DE ACCIÓN 2023\12. Dir. Rec Físicos e Infr\12. Dir. Rec Físicos e Infr.xlsm"
 nueva_hoja = "2. Seguimiento"
 
 # Leer la hoja especificada del nuevo archivo Excel
@@ -43,26 +43,21 @@ def mostrar_datos(event):
     # Agregar los datos filtrados del DataFrame POAI 2023 al Treeview
     for _, row in datos_filtrados.iterrows():
         valores = [row[i] for i in indices_columnas_seleccionadas]
+
+        if proyecto_seleccionado in proyectos_nuevo:
+            # Filtrar el DataFrame nuevo por el proyecto seleccionado en la columna "F" (POAI2023)
+            datos_nuevo_filtrados = df_nuevo[df_nuevo.iloc[:, 5] == proyecto_seleccionado]
+
+            for _, nuevo_row in datos_nuevo_filtrados.iterrows():
+                valores_nuevo = [nuevo_row[i] for i in indices_columnas_nuevo]
+
+                # Agregar los valores de las columnas seleccionadas del archivo nuevo
+                valores.extend(valores_nuevo)
+
+        # Insertar la fila en el Treeview
         treeview.insert("", "end", text=str(contador_filas), values=valores, tags=("datos",))
         contador_filas += 1
 
-    if proyecto_seleccionado in proyectos_nuevo:
-        # Filtrar el DataFrame nuevo por el proyecto seleccionado en la columna "F" (POAI2023)
-        datos_nuevo_filtrados = df_nuevo[df_nuevo.iloc[:, 5] == proyecto_seleccionado]
-
-        # Agregar los datos del nuevo archivo al Treeview
-        for _, row in datos_nuevo_filtrados.iterrows():
-            valores_nuevo = [row[i] for i in indices_columnas_nuevo]
-
-            # Crear una lista de valores para la fila actual
-            valores = [None] * len(indices_columnas_seleccionadas)  # Agregar valores nulos para las columnas seleccionadas del archivo original
-            valores.extend(valores_nuevo)  # Agregar los valores de las columnas seleccionadas del archivo nuevo
-
-            # Insertar la fila en el Treeview
-            treeview.insert("", "end", text=str(contador_filas), values=valores, tags=("datos",))
-            contador_filas += 1
-
-    
 # Crear la ventana
 window = ThemedTk()
 window.title("Tabla de datos Prueba")
@@ -86,11 +81,8 @@ nombres_columnas_nuevo = ["PERIODO DE EJECUCIÓN","% AVANCE EN EL APORTE DE LA A
 indices_columnas_nuevo = [15, 16, 17]  # Índices de las columnas seleccionadas en el DataFrame nuevo
 
 # Configurar las columnas del Treeview
-treeview["columns"] = indices_columnas_seleccionadas
-treeview.heading("#0", text="Índice")
-
-# Configurar las columnas del Treeview
 treeview["columns"] = indices_columnas_seleccionadas + indices_columnas_nuevo
+treeview.heading("#0", text="Índice")
 
 # Configurar los nombres de las columnas seleccionadas del archivo original
 for indice, indice_columna in enumerate(indices_columnas_seleccionadas):
@@ -107,4 +99,3 @@ treeview.pack(fill="both", expand=True)
 
 # Iniciar la aplicación
 window.mainloop()
-
