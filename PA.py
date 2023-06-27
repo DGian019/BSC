@@ -16,7 +16,7 @@ proyectos = df.iloc[3:, 6].dropna().unique().tolist()
 # Obtener los códigos de componente únicos
 codigos_componente = df.iloc[3:, 8].dropna().unique().tolist()
 
-# Ruta del nuevo archivo Excel
+# Ruta del nuevo archivo Excel (PA'S)
 nuevo_archivo_excel = r"\\RIDER\DocInterno\PEI - PDI 2022 - 2031\PLANES DE ACCIÓN 2023\12. Dir. Rec Físicos e Infr\12. Dir. Rec Físicos e Infr.xlsm"
 nueva_hoja = "2. Seguimiento"
 
@@ -51,14 +51,14 @@ def mostrar_datos(event):
 
     # Agregar los datos filtrados del DataFrame POAI 2023 al Treeview
     for _, row in datos_filtrados.iterrows():
-        valores = [row[i] for i in indices_columnas_seleccionadas]
+        valores = [row[i] for i in nombres_columnas_origen]
 
         if proyecto_seleccionado in proyectos_nuevo:
             # Filtrar el DataFrame nuevo por el proyecto seleccionado en la columna "F" (POAI2023)
             datos_nuevo_filtrados = df_nuevo[df_nuevo.iloc[:, 5] == proyecto_seleccionado]
 
             for _, nuevo_row in datos_nuevo_filtrados.iterrows():
-                valores_nuevo = [nuevo_row[i] for i in indices_columnas_nuevo]
+                valores_nuevo = [nuevo_row[i] for i in nombres_columnas_nuevo]
 
                 # Agregar los valores de las columnas seleccionadas del archivo nuevo
                 valores.extend(valores_nuevo)
@@ -67,8 +67,8 @@ def mostrar_datos(event):
         treeview.insert("", "end", text=str(contador_filas), values=valores, tags=("datos",))
         contador_filas += 1
 
-# Crear la ventana
-window = ThemedTk()
+# Crear la ventana Y el tema de la Ventana
+window = ThemedTk(theme="arc")
 window.title("Tabla de datos Prueba")
 
 # Crear el frame principal
@@ -91,27 +91,23 @@ combo_componente.pack(side="left")
 # Crear el Treeview para mostrar la tabla
 treeview = ttk.Treeview(window)
 
-# Definir las columnas seleccionadas y sus nombres
-nombres_columnas = ["PERSPECTIVA DEL BSC", "EJE", "OBJETIVO ESTRATÉGICO", "POLITICA", "PROGRAMA ", "RESPONSABLE DE PROGRAMA", "PROYECTO", "RESPONSABLE DE PROYECTO", "CÓDIGO COMPONENTE", "COMPONENTES", "COMPONENTES Concatenados", "INDICADOR", "META", "MEGAS", "MACROACTIVIDADES", "ACTIVIDAD", "RESPONSABLE COMPONENTE"]
-indices_columnas_seleccionadas = [0, 2, 3, 4, 6, 7, 8, 9, 11, 12, 14, 15, 16]  # Índices de las columnas seleccionadas en el DataFrame
+# Definir los nombres de las columnas del archivo original
+nombres_columnas_origen = ["PERSPECTIVA DEL BSC", "EJE", "OBJETIVO ESTRATÉGICO", "POLITICA", "PROGRAMA ", "RESPONSABLE DE PROGRAMA", "PROYECTO", "RESPONSABLE DE PROYECTO", "CÓDIGO COMPONENTE", "COMPONENTES", "COMPONENTES Concatenados", "INDICADOR", "META", "MEGAS", "MACROACTIVIDADES", "ACTIVIDAD", "RESPONSABLE COMPONENTE"]
 
-# Definir los nombres de las nuevas columnas seleccionadas y sus índices
-nombres_columnas_nuevo = ["PERIODO DE EJECUCIÓN","% AVANCE EN EL APORTE DE LA ACTIVIDAD AL COMPONENTE EN EL AÑO","% DE CUMPLIMIENTO DEL INDICADOR DE GESTIÓN"]
-indices_columnas_nuevo = [15, 16, 17]  # Índices de las columnas seleccionadas en el DataFrame nuevo
+# Definir los nombres de las columnas del archivo nuevo
+nombres_columnas_nuevo = ["PERIODO DE EJECUCIÓN", "% AVANCE EN EL APORTE DE LA ACTIVIDAD AL COMPONENTE EN EL AÑO", "% DE CUMPLIMIENTO DEL INDICADOR DE GESTIÓN"]
+
+# Crear un diccionario que mapee los índices de columna a sus respectivos nombres
+columnas = {i: nombre for i, nombre in enumerate(nombres_columnas_origen + nombres_columnas_nuevo)}
 
 # Configurar las columnas del Treeview
-treeview["columns"] = indices_columnas_seleccionadas + indices_columnas_nuevo
+treeview["columns"] = tuple(columnas.keys())
 treeview.heading("#0", text="Índice")
 
-# Configurar los nombres de las columnas seleccionadas del archivo original
-for indice, indice_columna in enumerate(indices_columnas_seleccionadas):
-    nombre_columna = nombres_columnas[indice_columna]
-    treeview.heading(indice_columna, text=f"{indice_columna}: {nombre_columna}")
+# Configurar los nombres de las columnas
+for indice, nombre_columna in columnas.items():
+    treeview.heading(str(indice), text=f"{indice}: {nombre_columna}")
 
-# Configurar los nombres de las nuevas columnas
-for indice, indice_columna in enumerate(indices_columnas_nuevo):
-    nombre_columna = nombres_columnas_nuevo[indice]
-    treeview.heading(indice_columna, text=f"{indice_columna}: {nombre_columna}")
 
 # Mostrar el Treeview vacío inicialmente
 treeview.pack(fill="both", expand=True)
